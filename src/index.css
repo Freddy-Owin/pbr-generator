@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-bruno {
+  font-family: 'Bruno Ace', cursive;
+}
