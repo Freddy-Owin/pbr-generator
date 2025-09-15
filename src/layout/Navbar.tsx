@@ -40,10 +40,10 @@ const Navbar: React.FC = () => {
 
                 {isOpen && (
                     <div className="absolute top-full mt-3 left-0 w-full bg-black border border-purple-500 rounded-xl flex flex-col items-center py-4 space-y-4 md:hidden z-50">
-                        <a href="#" className="hover:text-purple-400 transition-colors">PBR</a>
-                        <a href="#" className="hover:text-purple-400 transition-colors">Background Remover</a>
-                        <a href="#" className="hover:text-purple-400 transition-colors">About Us</a>
-                        <a href="#" className="hover:text-purple-400 transition-colors">Contact Us</a>
+                        <p onClick={() => navigate(paths.pbrGenerator)}  className="hover:text-purple-400 transition-colors">PBR</p>
+                        <p onClick={() => navigate(paths.bgRemover)}  className="hover:text-purple-400 transition-colors">Background Remover</p>
+                        <p onClick={() => navigate(paths.aboutUs)}  className="hover:text-purple-400 transition-colors">About Us</p>
+                        <p onClick={() => navigate(paths.contactUs)}  className="hover:text-purple-400 transition-colors">Contact Us</p>
                     </div>
                 )}
             </nav>
