@@ -209,11 +209,11 @@ const PbrGeneratorPage = () => {
         specular: { strength: 1, mean: 0.5, range: 1 },
     });
 
-    const handleSliderChange = (mapName: string, setting: string, value: number) => {
+    const handleSliderChange = (mapName: keyof typeof settings, setting: string, value: number) => {
         setSettings(prevSettings => ({
             ...prevSettings,
             [mapName]: {
-                ...prevSettings[mapName as keyof typeof prevSettings],
+                ...prevSettings[mapName],
                 [setting]: value,
             },
         }));
@@ -426,53 +426,63 @@ const PbrGeneratorPage = () => {
 
     return (
         <div className="flex flex-col items-center gap-6 p-6 min-h-screen bg-[#000000] text-white">
-            <h2 className="text-2xl font-bold">Control</h2>
+            <h2 className="text-2xl font-bold">PBR Texture Generator</h2>
 
-            <div className="flex flex-col items-center gap-4 w-full max-w-4xl">
-                <div className="flex flex-wrap justify-center gap-4 w-full">
-                    {MAP_NAMES.map((map) => (
-                        <button
-                            key={map}
-                            className={`px-4 py-2 rounded text-sm font-semibold transition-colors ${selectedMap === map ? "bg-purple-500 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
-                            onClick={() => setSelectedMap(map as MapName)}
-                            disabled={!maps[map]}
-                        >
-                            {map}
-                        </button>
-                    ))}
-                    <button
-                        onClick={handleDownloadAll}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
-                        disabled={!file || Object.values(maps).some(url => url === "")}
-                    >
-                        Download
-                    </button>
-                </div>
-
-                <div className="flex flex-col gap-4 w-full">
-                    {renderControls()}
-                </div>
+            {/* Upload Area */}
+            <div {...getRootProps()} className="w-full max-w-4xl h-64 border-4 border-dashed border-gray-400 rounded-lg flex items-center justify-center cursor-pointer p-4 text-center">
+                <input {...getInputProps()} />
+                {file ? (
+                    <img src={URL.createObjectURL(file)} alt="Uploaded" className="object-contain w-full h-full" />
+                ) : isDragActive ? (
+                    <p>Drop the image here...</p>
+                ) : (
+                    <p>Drag & drop or click to upload Original Image</p>
+                )}
             </div>
 
             <hr className="w-full my-6 border-gray-700" />
 
+            {/* Control Panel and 3D Preview */}
             <div className="flex flex-col md:flex-row gap-6 w-full max-w-6xl justify-center">
-                <div {...getRootProps()} className="w-full h-64 md:h-96 border-4 border-dashed border-gray-400 rounded-lg flex items-center justify-center cursor-pointer p-4 text-center">
-                    <input {...getInputProps()} />
-                    {file ? (
-                        <img src={URL.createObjectURL(file)} alt="Uploaded" className="object-contain w-full h-full" />
-                    ) : isDragActive ? (
-                        <p>Drop the image here...</p>
-                    ) : (
-                        <p>Drag & drop or click to upload Original Image</p>
-                    )}
+                {/* Control Panel */}
+                <div className="flex-1 flex flex-col gap-4 p-6 bg-gray-900 border border-gray-700 rounded-lg">
+                    <div className="flex flex-wrap justify-between items-center gap-2">
+                        <h3 className="text-xl font-semibold">Control</h3>
+                        <button
+                            onClick={handleDownloadAll}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            disabled={!file || Object.values(maps).some(url => url === "")}
+                        >
+                            Download
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 w-full">
+                        {MAP_NAMES.map((map) => (
+                            <button
+                                key={map}
+                                className={`px-4 py-2 rounded text-sm font-semibold transition-colors ${selectedMap === map ? "bg-purple-500 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`}
+                                onClick={() => setSelectedMap(map as MapName)}
+                                disabled={!maps[map]}
+                            >
+                                {map}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex flex-col gap-4 mt-4">
+                        {renderControls()}
+                    </div>
                 </div>
 
-                <div ref={mountRef} className="w-full h-64 md:h-96 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center bg-gray-800" />
+                {/* 3D Preview */}
+                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-900 border border-gray-700 rounded-lg">
+                    <h3 className="text-xl font-semibold mb-4">3D Preview</h3>
+                    <div ref={mountRef} className="w-full h-96 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center bg-gray-800" />
+                </div>
             </div>
 
             <hr className="w-full my-6 border-gray-700" />
 
+            {/* Generated Images */}
             <div className="w-full max-w-6xl">
                 <h2 className="text-2xl font-bold mb-4 text-center">Generated Images</h2>
                 <div className="flex flex-wrap gap-4 justify-center">
