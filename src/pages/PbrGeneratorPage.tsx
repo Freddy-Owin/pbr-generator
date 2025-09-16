@@ -428,7 +428,6 @@ const PbrGeneratorPage = () => {
         <div className="flex flex-col items-center gap-6 p-6 min-h-screen bg-[#000000] text-white">
             <h2 className="text-2xl font-bold">PBR Texture Generator</h2>
 
-            {/* Upload Area */}
             <div {...getRootProps()} className="w-full max-w-4xl h-64 border-4 border-dashed border-gray-400 rounded-lg flex items-center justify-center cursor-pointer p-4 text-center">
                 <input {...getInputProps()} />
                 {file ? (
@@ -442,9 +441,7 @@ const PbrGeneratorPage = () => {
 
             <hr className="w-full my-6 border-gray-700" />
 
-            {/* Control Panel and 3D Preview */}
             <div className="flex flex-col md:flex-row gap-6 w-full max-w-6xl justify-center">
-                {/* Control Panel */}
                 <div className="flex-1 flex flex-col gap-4 p-6 bg-gray-900 border border-gray-700 rounded-lg">
                     <div className="flex flex-wrap justify-between items-center gap-2">
                         <h3 className="text-xl font-semibold">Control</h3>
@@ -473,7 +470,6 @@ const PbrGeneratorPage = () => {
                     </div>
                 </div>
 
-                {/* 3D Preview */}
                 <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-900 border border-gray-700 rounded-lg">
                     <h3 className="text-xl font-semibold mb-4">3D Preview</h3>
                     <div ref={mountRef} className="w-full h-96 border border-gray-700 rounded-lg overflow-hidden flex items-center justify-center bg-gray-800" />
@@ -482,7 +478,6 @@ const PbrGeneratorPage = () => {
 
             <hr className="w-full my-6 border-gray-700" />
 
-            {/* Generated Images */}
             <div className="w-full max-w-6xl">
                 <h2 className="text-2xl font-bold mb-4 text-center">Generated Images</h2>
                 <div className="flex flex-wrap gap-4 justify-center">

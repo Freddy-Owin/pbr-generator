@@ -3,5 +3,7 @@ export const paths = {
     bgRemover: "/bg-remover",
     pbrGenerator: "/pbr-generator",
     aboutUs: "about-us",
-    contactUs: "contact-us"
+    contactUs: "contact-us",
+    paletteExtractor: "palette-extractor",
+    seamlessTexture: "seamless-texture"
 }
