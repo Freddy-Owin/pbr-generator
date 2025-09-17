@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
 
                 <div className="hidden md:flex space-x-6 whitespace-nowrap">
                     <p onClick={() => navigate(paths.pbrGenerator)} className="hover:text-purple-400 hover:cursor-pointer transition-colors">PBR</p>
-                    <p onClick={() => navigate(paths.seamlessTexture)} className="hover:text-purple-400 hover:cursor-pointer transition-colors">Seamless Texture</p>
+                    <p onClick={() => navigate(paths.photoToVector)} className="hover:text-purple-400 hover:cursor-pointer transition-colors">Image to Vector</p>
                     <p onClick={() => navigate(paths.paletteExtractor)} className="hover:text-purple-400 hover:cursor-pointer transition-colors">Palette Extractor</p>
                 </div>
 
@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
                 {isOpen && (
                     <div className="absolute top-full mt-3 left-0 w-full bg-black border border-purple-500 rounded-xl flex flex-col items-center py-4 space-y-4 md:hidden z-50">
                         <p onClick={() => navigate(paths.pbrGenerator)}  className="hover:text-purple-400 transition-colors">PBR</p>
-                        <p onClick={() => navigate(paths.seamlessTexture)}  className="hover:text-purple-400 transition-colors">Seamless Texture</p>
+                        <p onClick={() => navigate(paths.photoToVector)}  className="hover:text-purple-400 transition-colors">Image to Vector</p>
                         <p onClick={() => navigate(paths.paletteExtractor)}  className="hover:text-purple-400 transition-colors">Palette Extractor</p>
                         <p onClick={() => navigate(paths.bgRemover)}  className="hover:text-purple-400 transition-colors">Background Remover</p>
                         <p onClick={() => navigate(paths.aboutUs)}  className="hover:text-purple-400 transition-colors">About Us</p>

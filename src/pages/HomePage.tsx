@@ -4,8 +4,8 @@ import original from "../assets/pbr-example/original.jpg";
 import normal from "../assets/pbr-example/normal.png";
 import roughness from "../assets/pbr-example/roughness.png";
 import specular from "../assets/pbr-example/specular.png";
-import texture from "../assets/seamless/texture.jpg";
-import textureExample from "../assets/seamless/texture-example.png";
+import vector from "../assets/vector/vector.jpeg";
+import vectorized from "../assets/vector/vectorized.png";
 import palette from "../assets/palette-extractor/palette.png";
 import { useNavigate } from "react-router-dom";
 import { paths } from "../utils/path";
@@ -126,15 +126,13 @@ export default function Home() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-12 my-20 max-w-6xl mx-auto px-6">
                 <div className="flex flex-col justify-center">
-                    <h2 className="text-3xl font-bold">Seamless Texture</h2>
+                    <h2 className="text-3xl font-bold">Image to Vector</h2>
                     <p className="text-gray-400 mt-4 font-inter text-[16px]">
-                        Generate high-quality seamless textures effortlessly. Upload any image, and our AI-powered generator
-                        will create tiles that repeat perfectly in 3D models, game environments, or design projects. Customize
-                        patterns and parameters to match your creative vision.
+                        Convert your images into crisp, scalable vector graphics effortlessly. Our AI-powered tool transforms photos, sketches, and designs into precise vector formats, ready for logos, illustrations, or digital art projects. Preserve quality at any size and speed up your design workflow.
                     </p>
                     <Button
                         className="mt-6 border border-purple-500 bg-transparent text-purple-400 hover:bg-purple-500 hover:text-black"
-                        onClick={() => navigate(paths.seamlessTexture)}
+                        onClick={() => navigate(paths.photoToVector)}
                     >
                         Generate Now
                     </Button>
@@ -144,13 +142,13 @@ export default function Home() {
                         <Card>
                             <div className="flex flex-col items-center gap-3">
                                 <p>Original</p>
-                                <img src={texture} alt="Original" width={300} height={200} className="rounded-lg" />
+                                <img src={vector} alt="Original" width={300} height={200} className="rounded-lg" />
                             </div>
                         </Card>
                         <Card>
                             <div className="flex flex-col items-center gap-3">
-                                <p>Example</p>
-                                <img src={textureExample} alt="Example" width={300} height={200} className="rounded-lg" />
+                                <p>Vetorized</p>
+                                <img src={vectorized} alt="Example" width={300} height={200} className="rounded-lg" />
                             </div>
                         </Card>
                     </div>

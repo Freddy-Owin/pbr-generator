@@ -5,5 +5,7 @@ export const paths = {
     aboutUs: "about-us",
     contactUs: "contact-us",
     paletteExtractor: "palette-extractor",
-    seamlessTexture: "seamless-texture"
+    seamlessTexture: "seamless-texture",
+    photoToVector: "photo-to-vector",
+    hdrMap: "hdr-map",
 }

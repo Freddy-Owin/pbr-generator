@@ -392,7 +392,7 @@ const PbrGeneratorPage = () => {
             return (
                 <>
                     <label className="text-sm font-medium">Contrast: {settings.displacement.contrast.toFixed(1)}</label>
-                    <input type="range" min={-100} max={100} step={1} value={settings.displacement.contrast} onChange={(e) => handleSliderChange("displacement", "contrast", parseFloat(e.target.value))} />
+                    <input type="range" min={-1} max={2} step={0.1} value={settings.displacement.contrast} onChange={(e) => handleSliderChange("displacement", "contrast", parseFloat(e.target.value))} />
                     <label className="text-sm font-medium">Blur/Sharp: {settings.displacement.blurSharp.toFixed(1)}</label>
                     <input type="range" min={-2} max={2} step={0.1} value={settings.displacement.blurSharp} onChange={(e) => handleSliderChange("displacement", "blurSharp", parseFloat(e.target.value))} />
                 </>
