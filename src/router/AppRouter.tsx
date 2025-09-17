@@ -29,8 +29,6 @@ export const AppRouter = () => {
                     {/* <Route path={paths.seamlessTexture} element={<SeamlessTextureMaker />} /> */}
                     <Route path={paths.photoToVector} element={<PhotoToVector />} />
                     <Route path={paths.hdrMap} element={<EnvMapGenerator />} />
-
-
                 </Routes>
             </div>
             <Footer />

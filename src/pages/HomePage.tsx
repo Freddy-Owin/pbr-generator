@@ -7,6 +7,9 @@ import specular from "../assets/pbr-example/specular.png";
 import vector from "../assets/vector/vector.jpeg";
 import vectorized from "../assets/vector/vectorized.png";
 import palette from "../assets/palette-extractor/palette.png";
+import hdri from "../assets/hdri/hdri.jpeg"
+import hdri_result from "../assets/hdri/hdri_result.jpg"
+
 import { useNavigate } from "react-router-dom";
 import { paths } from "../utils/path";
 
@@ -161,17 +164,32 @@ export default function Home() {
                         <Card>
                             <div className="flex flex-col items-center gap-3">
                                 <p>Original Image</p>
-                                <img src={no_bg} alt="Original" width={300} height={200} className="rounded-lg" />
+                                <img src={hdri} alt="Original" width={300} height={200} className="rounded-lg" />
                             </div>
                         </Card>
                         <Card>
                             <div className="flex flex-col items-center gap-3">
                                 <p>Result</p>
-                                <img src={palette} alt="Result" width={300} height={200} className="rounded-lg" />
+                                <img src={hdri_result} alt="Result" width={300} height={200} className="rounded-lg" />
                             </div>
                         </Card>
                     </div>
                 </div>
+                <div className="flex flex-col justify-center">
+                    <h2 className="text-3xl font-bold">HDRI 360 Degree Converter</h2>
+                    <p className="text-gray-400 mt-4 font-inter text-[16px]">
+                        Effortlessly convert any static architectural render or interior image into a high-quality 360° HDRI environment map. Built for architects, interior designers, and property marketers, this tool enhances presentations with fully navigable environments. All from a single input image. No 3D model, no stitching software, no hassle.
+                    </p>
+                    <Button
+                        className="mt-6 border border-purple-500 bg-transparent text-purple-400 hover:bg-purple-500 hover:text-black"
+                        onClick={() => navigate(paths.hdrMap)}
+                    >
+                        Generate Now
+                    </Button>
+                </div>
+            </section>
+
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-12 my-20 max-w-6xl mx-auto px-6">
                 <div className="flex flex-col justify-center">
                     <h2 className="text-3xl font-bold">Palette Extractor</h2>
                     <p className="text-gray-400 mt-4 font-inter text-[16px]">
@@ -185,6 +203,22 @@ export default function Home() {
                     >
                         Generate Now
                     </Button>
+                </div>
+                <div className="flex flex-col items-center md:items-start">
+                    <div className="grid grid-cols-2 gap-6">
+                        <Card>
+                            <div className="flex flex-col items-center gap-3">
+                                <p>Original Image</p>
+                                <img src={no_bg} alt="Original" width={300} height={200} className="rounded-lg" />
+                            </div>
+                        </Card>
+                        <Card>
+                            <div className="flex flex-col items-center gap-3">
+                                <p>Result</p>
+                                <img src={palette} alt="Result" width={300} height={200} className="rounded-lg" />
+                            </div>
+                        </Card>
+                    </div>
                 </div>
             </section>
         </>

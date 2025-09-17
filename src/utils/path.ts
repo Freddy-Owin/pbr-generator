@@ -8,4 +8,5 @@ export const paths = {
     seamlessTexture: "seamless-texture",
     photoToVector: "photo-to-vector",
     hdrMap: "hdr-map",
+    avarterGenerator: "avarter-generator",
 }

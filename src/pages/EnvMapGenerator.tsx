@@ -1,68 +1,41 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-const HDRLayout: React.FC = () => {
-    const mountRef = useRef<HTMLDivElement>(null);
-    const [imageSrc, setImageSrc] = useState<string | null>(null);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const [textureLoaded, setTextureLoaded] = useState(false);
+interface ViewerModalProps {
+    src: string;
+    onClose: () => void;
+}
 
-    // Dropzone
-    const onDrop = useCallback((acceptedFiles: File[], fileRejections: any[]) => {
-        setErrorMsg(null);
-        setTextureLoaded(false);
-        if (fileRejections.length > 0) {
-            setErrorMsg("Invalid file type. Only JPG or PNG allowed.");
-            return;
-        }
-        if (!acceptedFiles[0]) return;
-        const reader = new FileReader();
-        reader.onload = () => setImageSrc(reader.result as string);
-        reader.readAsDataURL(acceptedFiles[0]);
-    }, []);
+const ViewerModal: React.FC<ViewerModalProps> = ({ src, onClose }) => {
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop,
-        accept: { "image/jpeg": [], "image/png": [] },
-        multiple: false,
-    });
-
-    // Three.js setup
     useEffect(() => {
-        if (!mountRef.current || !imageSrc) return;
+        if (!containerRef.current) return;
 
-        const width = mountRef.current.clientWidth;
-        const height = 600;
-
+        const container = containerRef.current;
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        camera.position.set(0, 0, 0.01);
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            container.offsetWidth / container.offsetHeight,
+            0.1,
+            1000
+        );
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        container.appendChild(renderer.domElement);
 
-        // Key fix: preserveDrawingBuffer=true ensures canvas can be exported
-        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(width, height, false);
-        mountRef.current.appendChild(renderer.domElement);
+        const geometry = new THREE.SphereGeometry(50, 60, 40);
+        geometry.scale(-1, 1, 1);
+        const texture = new THREE.TextureLoader().load(src);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-
-        const loader = new THREE.TextureLoader();
-        loader.load(
-            imageSrc,
-            (texture: THREE.Texture) => {
-                const geometry = new THREE.SphereGeometry(50, 64, 64);
-                geometry.scale(-1, 1, 1);
-                const material = new THREE.MeshBasicMaterial({ map: texture });
-                const sphere = new THREE.Mesh(geometry, material);
-                scene.add(sphere);
-                setTextureLoaded(true);
-            },
-            undefined,
-            () => setErrorMsg("Failed to load texture.")
-        );
+        controls.rotateSpeed = -0.25;
+        camera.position.set(0, 0, 0.1);
 
         const animate = () => {
             requestAnimationFrame(animate);
@@ -71,91 +44,242 @@ const HDRLayout: React.FC = () => {
         };
         animate();
 
-        return () => {
-            mountRef.current?.removeChild(renderer.domElement);
+        const handleResize = () => {
+            camera.aspect = container.offsetWidth / container.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
         };
-    }, [imageSrc]);
+        window.addEventListener("resize", handleResize);
 
-    // Download PNG
-    const handleDownloadPNG = () => {
-        if (!mountRef.current || !textureLoaded) {
-            alert("Please wait until the image is fully loaded.");
-            return;
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            container.removeChild(renderer.domElement);
+        };
+    }, [src]);
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center">
+            <div className="relative w-full h-full max-w-4xl max-h-[80vh]">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-200 z-10"
+                >
+                    ✖
+                </button>
+                <div ref={containerRef} className="w-full h-full rounded-lg overflow-hidden" />
+            </div>
+        </div>
+    );
+};
+
+const HDRIGenerator: React.FC = () => {
+    const [uploadedImage, setUploadedImage] = useState<HTMLImageElement | null>(null);
+    const [generatedHDRI, setGeneratedHDRI] = useState<string | null>(null);
+    const [intensity, setIntensity] = useState<number>(1.2);
+    const [blur, setBlur] = useState<number>(3);
+    const [showModal, setShowModal] = useState(false);
+
+    const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const renderCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const previewCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+    const renderCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+
+    const resizeCanvases = () => {
+        if (previewCanvasRef.current && renderCanvasRef.current) {
+            previewCanvasRef.current.width = previewCanvasRef.current.offsetWidth;
+            previewCanvasRef.current.height = previewCanvasRef.current.offsetHeight;
+            renderCanvasRef.current.width = renderCanvasRef.current.offsetWidth;
+            renderCanvasRef.current.height = renderCanvasRef.current.offsetHeight;
         }
-        const canvas = mountRef.current.querySelector("canvas") as HTMLCanvasElement;
-        if (!canvas) return;
+    };
 
+    useEffect(() => {
+        resizeCanvases();
+        window.addEventListener("resize", resizeCanvases);
+        if (previewCanvasRef.current)
+            previewCtxRef.current = previewCanvasRef.current.getContext("2d");
+        if (renderCanvasRef.current)
+            renderCtxRef.current = renderCanvasRef.current.getContext("2d");
+        return () => window.removeEventListener("resize", resizeCanvases);
+    }, []);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.[0]) return;
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                setUploadedImage(img);
+                drawPreviewImage(img);
+            };
+            if (ev.target?.result) img.src = ev.target.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const drawPreviewImage = (img: HTMLImageElement) => {
+        const ctx = previewCtxRef.current;
+        const canvas = previewCanvasRef.current;
+        if (!ctx || !canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const width = img.width * scale;
+        const height = img.height * scale;
+        const x = (canvas.width - width) / 2;
+        const y = (canvas.height - height) / 2;
+        ctx.drawImage(img, x, y, width, height);
+    };
+
+    const processHDRI = () => {
+        if (!uploadedImage) return;
+        const ctx = renderCtxRef.current;
+        const canvas = renderCanvasRef.current;
+        if (!ctx || !canvas) return;
+
+        canvas.width = 2048;
+        canvas.height = 1024;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const scale = canvas.height / uploadedImage.height;
+        const targetWidth = uploadedImage.width * scale;
+        const x = (canvas.width - targetWidth) / 2;
+        ctx.drawImage(uploadedImage, x, 0, targetWidth, canvas.height);
+
+        // Mirror left side
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(canvas, 0, 0, canvas.width / 2, canvas.height, -canvas.width, 0, canvas.width / 2, canvas.height);
+        ctx.restore();
+
+        // Mirror right side
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(canvas, canvas.width / 2, 0, canvas.width / 2, canvas.height, -canvas.width / 2, 0, canvas.width / 2, canvas.height);
+        ctx.restore();
+
+        applyHDRIEffect();
+        setGeneratedHDRI(canvas.toDataURL("image/jpeg", 0.9));
+    };
+
+    const applyHDRIEffect = () => {
+        const ctx = renderCtxRef.current;
+        const canvas = renderCanvasRef.current;
+        if (!ctx || !canvas) return;
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = Math.min(255, data[i] * intensity);
+            data[i + 1] = Math.min(255, data[i + 1] * intensity);
+            data[i + 2] = Math.min(255, data[i + 2] * intensity);
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        if (blur > 0) {
+            ctx.filter = `blur(${blur}px)`;
+            ctx.drawImage(canvas, 0, 0);
+            ctx.filter = "none";
+        }
+    };
+
+    // 🔥 Automatically regenerate whenever image, intensity, or blur changes
+    useEffect(() => {
+        if (uploadedImage) processHDRI();
+    }, [uploadedImage, intensity, blur]);
+
+    const downloadHDRI = () => {
+        if (!generatedHDRI) return;
         const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "hdr_preview.png";
+        link.href = generatedHDRI;
+        link.download = "hdri-panorama.jpg";
         link.click();
     };
 
-    const handleDownloadHDR = () => {
-        alert("HDR export placeholder (frontend-only). Currently downloads PNG.");
-        handleDownloadPNG();
-    };
-
-    const handleDownloadEXR = () => {
-        alert("EXR export placeholder (frontend-only). Currently downloads PNG.");
-        handleDownloadPNG();
-    };
-
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-            {/* Header */}
-            <header className="w-full max-w-6xl mb-6">
-                <h1 className="text-4xl font-bold text-center">HDR Environment Map Generator</h1>
-            </header>
+        <div className="max-w-6xl my-5 mx-auto p-6">
+            <h1 className="text-3xl font-bold text-white text-center mb-6">
+                360° HDRI Generator
+            </h1>
 
-            {/* Central frame */}
-            <div className="w-full max-w-6xl border-2 border-gray-600 rounded-lg relative flex flex-col items-center justify-center bg-gray-800">
-                {/* Dropzone overlay */}
-                {!imageSrc && (
-                    <div
-                        {...getRootProps()}
-                        className={`absolute inset-0 flex flex-col items-center justify-center cursor-pointer z-10 ${isDragActive ? "bg-gray-700/70" : "bg-gray-800/70"
-                            }`}
-                    >
-                        <input {...getInputProps()} />
-                        <p className="text-center px-4">
-                            {isDragActive
-                                ? "Drop your 360° image here..."
-                                : "Drag & drop a JPG/PNG 360° image, or click to upload"}
-                        </p>
-                        {errorMsg && <p className="text-red-400 mt-2">{errorMsg}</p>}
-                    </div>
-                )}
+            <div className="bg-gray-900 backdrop-blur-md border border-white/20 rounded-xl p-6 mb-6 text-white">
+            <h2 className="text-xl font-semibold mb-3">How it works</h2>
+            <ul className="list-disc pl-5 space-y-2 text-gray-200">
+                <li>Upload any image to transform it into a 360° HDRI environment.</li>
+                <li>The algorithm analyzes colors and lighting to create a spherical projection.</li>
+                <li>Adjust settings to control the intensity and effects of your HDRI.</li>
+                <li>Download your HDRI for use in 3D software or view it in 360° mode.</li>
+            </ul>
+        </div>
 
-                {/* Three.js preview */}
-                <div ref={mountRef} className="w-full" style={{ height: 600 }} />
+            {/* Upload area */}
+            <label className="block w-full border-2 border-dashed border-purple-400 rounded-lg p-6 text-center cursor-pointer mb-6 hover:bg-indigo-50">
+                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                <span className="text-gray-700">Click or drag to upload an image</span>
+            </label>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Original Image</h3>
+                    <canvas ref={previewCanvasRef} className="w-full h-64 bg-slate-800 rounded-lg" />
+                </div>
+                <div>
+                    <h3 className="text-lg font-medium text-white mb-2">Generated HDRI</h3>
+                    <canvas ref={renderCanvasRef} className="w-full h-64 bg-slate-800 rounded-lg" />
+                </div>
             </div>
 
-            {/* Action buttons */}
-            {imageSrc && (
-                <div className="flex gap-4 mt-4">
+            <div className="bg-gray-900 rounded-xl shadow p-6 mb-6">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">Environment Intensity</label>
+                        <input
+                            type="range"
+                            min="0.5"
+                            max="2"
+                            step="0.1"
+                            value={intensity}
+                            onChange={(e) => setIntensity(parseFloat(e.target.value))}
+                            className="w-full"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-500 mb-1">Blur</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="10"
+                            step="1"
+                            value={blur}
+                            onChange={(e) => setBlur(parseInt(e.target.value))}
+                            className="w-full"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex space-x-4">
                     <button
-                        onClick={handleDownloadPNG}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded"
+                        onClick={downloadHDRI}
+                        disabled={!generatedHDRI}
+                        className="flex-1 bg-white border border-purple-600 text-indigo-600 py-2 px-4 rounded-lg hover:bg-purple-50 disabled:opacity-50"
                     >
-                        PNG
+                        Download
                     </button>
                     <button
-                        onClick={handleDownloadHDR}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded"
+                        onClick={() => setShowModal(true)}
+                        disabled={!generatedHDRI}
+                        className="flex-1 bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
                     >
-                        HDR
-                    </button>
-                    <button
-                        onClick={handleDownloadEXR}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded"
-                    >
-                        EXR
+                        360° View
                     </button>
                 </div>
+            </div>
+
+            {showModal && generatedHDRI && (
+                <ViewerModal src={generatedHDRI} onClose={() => setShowModal(false)} />
             )}
         </div>
     );
 };
 
-export default HDRLayout;
+export default HDRIGenerator;
